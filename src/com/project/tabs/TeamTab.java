@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+
 import project.database.*;
 import project.models.MyModel;
 import project.models.Team;
@@ -79,6 +80,7 @@ public class TeamTab {
 		editBtn.addActionListener(new EditAction());
 		searchBtn.addActionListener(new SearchAction());
 		refreshBtn.addActionListener(new RefreshAction());
+		
         
         // DownPanel
 		myScroll.setPreferredSize(new Dimension(350, 150));
@@ -209,6 +211,7 @@ public class TeamTab {
 			}
 		}
 	}
+    
 	
 	class RefreshAction implements ActionListener{
 

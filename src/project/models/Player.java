@@ -82,7 +82,7 @@ public class Player {
         pstmt.executeUpdate();
     }
     
-    public static void updatePlayers(Connection conn, int id, String fName, String lName, int number, int teamId) throws SQLException {
+    public static void updatePlayers(Connection conn, String fName, String lName, int number, int teamId , int id) throws SQLException {
         PreparedStatement pstmt = conn.prepareStatement("UPDATE players SET first_name = ?, last_name = ?, `number` = ?, teamId = ? WHERE id = ?");
         pstmt.setString(1, fName);
         pstmt.setString(2, lName);

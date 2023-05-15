@@ -82,7 +82,29 @@ public class Team {
         pstmt.executeUpdate();
     }
 
-	
+    public static void SearchPlayerAndTeam(Connection connection, String fName , String name  ) throws SQLException {
+        PreparedStatement pstmt = connection.prepareStatement("SELECT p.first_name,"
+        		+ " t.name  FROM players INNER JOIN team ON p.teamId = t.id;");
+        pstmt.setString(1, fName);
+        pstmt.setString(2, name);
+        pstmt.executeUpdate();
+    }
+    
+    public static int getTeamIdByName(Connection conn, String Name) throws SQLException {
+        int teamId = 0;
+        String query = "SELECT id FROM team WHERE name = ?";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, Name);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                teamId = rs.getInt("id");
+            }
+        }
+        
+        return teamId;
+    }
 
 	
 }

@@ -11,18 +11,18 @@ import java.awt.event.MouseListener;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JComboBox;
 
-
-import project.database.DbConnection;
+import project.database.*;
 import project.models.Coach;
 import project.models.MyModel;
+import project.models.Team;
 
 
 
@@ -38,6 +38,7 @@ public class CoachTab {
 	JLabel fNameLabel = new JLabel("First Name:");
 	JLabel lNameLabel = new JLabel("Last Name:");
 	JLabel teamLabel = new JLabel("TeamId:");
+	JComboBox<String> teamComboBox = new JComboBox<>();
 	
 	JTextField fNameTextField = new JTextField();
 	JTextField lNameTextField=new JTextField();
@@ -52,8 +53,7 @@ public class CoachTab {
 	JTable table=new JTable();
 	JScrollPane myScroll=new JScrollPane(table);
 	
-    public CoachTab() {
-		
+	public CoachTab() {
         panel = new JPanel();
         panel.setLayout(new GridLayout(3, 1));
         conn = DbConnection.getConnection();
@@ -71,8 +71,9 @@ public class CoachTab {
 		upPanel.add(fNameTextField);
 		upPanel.add(lNameLabel);
 		upPanel.add(lNameTextField);
-		upPanel.add(teamLabel);
-		upPanel.add(teamTextField);
+		// Add the new teamLabel and teamComboBox components
+		upPanel.add(new JLabel("Team:"));
+		upPanel.add(teamComboBox);
         // MidPanel
 		midPanel.add(addBtn);
 		midPanel.add(deleteBtn);
@@ -102,17 +103,25 @@ public class CoachTab {
     }
     
     public void refreshTable() {
-    	try {
-			ResultSet result = Coach.getAllCoaches(conn);
-			table.setModel(new MyModel(result));
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+        try {
+            ResultSet result = Coach.getAllCoaches(conn);
+            table.setModel(new MyModel(result));
+
+            // Clear the combo box
+            teamComboBox.removeAllItems();
+
+            // Populate the combo box with team names
+            ResultSet teamResult = Team.getAllTeams(conn);
+            while (teamResult.next()) {
+                String teamName = teamResult.getString("name");
+                teamComboBox.addItem(teamName);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     
     public void clearForm() {
     	fNameTextField.setText("");
@@ -120,50 +129,48 @@ public class CoachTab {
     	teamTextField.setText("");
 	}
     
-    class AddAction implements ActionListener{
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			try {
-				int teamId= TeamTab.getTeamId();
-				
-				if(teamId != 0 ) {
-					Coach.insertCoaches(conn, fNameTextField.getText(), lNameTextField.getText(), 
-							Integer.parseInt(teamTextField.getText()));
-				System.err.println("ebasi mamata ");
-				refreshTable();
-				System.err.println("ne sym gore ");
-				clearForm();
-				coachId = -1;
-				}
-				
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
-		}
-	}
+    class AddAction implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                String selectedTeam = teamComboBox.getSelectedItem().toString();
+
+                // Retrieve the teamId based on the selected team name
+                int teamId = Team.getTeamIdByName(conn, selectedTeam);
+
+                if (teamId != 0) {
+                    Coach.insertCoaches(conn, fNameTextField.getText(), lNameTextField.getText(), teamId);
+                    refreshTable();
+                    clearForm();
+                    coachId = -1;
+                }
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
     
-    class EditAction implements ActionListener{
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			try {
-				int teamId = TeamTab.getTeamId();
-				
-				if (teamId < 0) {
-					return;
-				}
-				
-				Coach.updateCoaches(conn, coachId, fNameTextField.getText(),
-						lNameTextField.getText(),
-						Integer.parseInt(teamTextField.getText()));
-				refreshTable();
-				clearForm();
-				coachId=-1;
-				
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
-		}
-	}
+    class EditAction implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                String selectedTeam = teamComboBox.getSelectedItem().toString();
+
+                // Retrieve the teamId based on the selected team name
+                int teamId = Team.getTeamIdByName(conn, selectedTeam);
+
+                if (teamId != 0) {
+                    Coach.updateCoaches(conn, teamId, lNameTextField.getText(),
+                            fNameTextField.getText(), coachId);
+                    refreshTable();
+                    clearForm();
+                    coachId = -1;
+                }
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
     
     class MouseAction implements MouseListener{
 		@Override
@@ -173,7 +180,7 @@ public class CoachTab {
 			coachId = Integer.parseInt(table.getValueAt(row, 0).toString());
 			fNameTextField.setText(table.getValueAt(row, 1).toString());
 			lNameTextField.setText(table.getValueAt(row, 2).toString());
-			teamTextField.setText(table.getValueAt(row, 3).toString());
+			teamTextField.setText(table.getValueAt(row, 4).toString());
 		}
 
 		@Override
@@ -196,12 +203,12 @@ public class CoachTab {
 			// TODO Auto-generated method stub
 		}
 	}
-   
+    
     class DeleteAction implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			try {
-				Coach.deleteCoaches(conn, coachId);
+				Coach.deleteCoaches(conn, coachId);;
 				refreshTable();
 				clearForm();
 				coachId=-1;
@@ -214,21 +221,20 @@ public class CoachTab {
 	}
     
     class SearchAction implements ActionListener{
-			@Override
-	    	public void actionPerformed(ActionEvent e) {
-				try {
-					ResultSet result = Coach.searchCoaches(conn, fNameTextField.getText());
-					table.setModel(new MyModel(result));
-				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+    	@Override
+    	public void actionPerformed(ActionEvent e) {
+			try {
+				ResultSet result = Coach.searchCoaches(conn, fNameTextField.getText());
+				table.setModel(new MyModel(result));
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
+		}
 	}
-    
     
     class RefreshAction implements ActionListener{
 

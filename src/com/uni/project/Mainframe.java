@@ -7,6 +7,8 @@ import com.project.tabs.CoachTab;
 import com.project.tabs.PlayerTab;
 import com.project.tabs.TeamTab;
 
+import project.models.PlayersAndTeamsSearch;
+
 import javax.swing.JTabbedPane;
 
 public class Mainframe extends JFrame {
@@ -18,6 +20,7 @@ public class Mainframe extends JFrame {
 	JPanel panelTeams = new JPanel();
 	JPanel panelPlayers = new JPanel();
 	JPanel panelCoaches = new JPanel();
+	JPanel panelSearch = new JPanel();
 	
 	JTabbedPane tab = new JTabbedPane();
 	
@@ -27,11 +30,13 @@ public class Mainframe extends JFrame {
 		PlayerTab playerTab = new PlayerTab();
 		TeamTab teamTab = new TeamTab();
 		CoachTab coachTab = new CoachTab();
+		PlayersAndTeamsSearch playerAndTeams = new PlayersAndTeamsSearch();
         
         tab.add(playerTab.getPanel(), "Players");
         
         tab.add(teamTab.getPanel(), "Teams");
         tab.add(coachTab.getPanel(), "Coaches");
+        tab.add(playerAndTeams.getPanel(),"Search");
         
         
 		

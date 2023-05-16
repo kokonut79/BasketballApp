@@ -14,13 +14,15 @@ public class Search {
 	}
 	
 	  public static ResultSet getPlayerAndTeamNames(Connection conn, String pName, String tName) throws SQLException {
-		        String query = "SELECT p.first_name,p.last_name, t.name " +
+		    
+		       
+		  String query = "SELECT p.first_name,p.last_name, t.name " +
 		                "FROM players p " +
-		                "LEFT JOIN team t ON p.teamId = t.id " +
-		                "WHERE p.first_name = ? AND t.name = ?";
+		                "JOIN team t ON p.teamId = t.id " +
+		                "WHERE p.first_name like '%"+pName+"%' AND t.name like '%"+tName+"%' ";
 	        var statement = conn.prepareStatement(query);
-	        statement.setString(1, pName);
-	        statement.setString(2, tName);
+//	        statement.setString(1, pName);
+//	        statement.setString(2, tName);
 	       var  resultSet = statement.executeQuery();
 	        return resultSet;
 	    }
